@@ -1,34 +1,31 @@
+# ─────────────────────────────────────────────────────────────
+# PUNTO DE ENTRADA — crea la app FastAPI y registra los routers
+# ─────────────────────────────────────────────────────────────
 
 from fastapi import FastAPI
-from contextlib import asynccontextmanager
+from app.api.producto_router import router as producto_router
 
-
-@asynccontextmanager
-async def lifespan(app: FastAPI):
-    print("Iniciando aplicación...")
-    yield
-    print("Cerrando aplicación...")
-
-
+# Crear la aplicación con metadata para la documentación
 app = FastAPI(
-    title="Mi Web Service",
-    description="API para la plataforma intermediaria de reservas de hoteles",
+    title="API Modelo de Negocio",
+    description="API REST con arquitectura de capas — FastAPI",
     version="1.0.0",
-    debug=True,
-    lifespan=lifespan
 )
 
+# Registrar el router de productos
+app.include_router(producto_router)
 
-@app.get("/", tags=["Inicio"])
-async def inicio():
+# Ruta raíz — bienvenida
+@app.get("/", tags=["Root"])
+def root():
     return {
-        "message": "Mi Web Service está funcionando",
-        "status": "online"
+        "mensaje": "API corriendo correctamente 🚀",
+        "docs":    "http://127.0.0.1:8000/docs",
+        "version": "1.0.0",
     }
 
 
-@app.get("/health", tags=["Sistema"])
-async def health():
-    return {
-        "status": "healthy"
-    }
+# ── Para correr directamente con: python main.py ─────────────
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
