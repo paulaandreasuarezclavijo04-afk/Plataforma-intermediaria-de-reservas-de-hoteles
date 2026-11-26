@@ -28,8 +28,12 @@ class PagoRepository(BaseRepository[Pago]):
             select(Pago)
             .where(
                 Pago.reserva_id == reserva_id,
-                Pago.estado.in_(("pendiente", "pagado"))
+                Pago.estado.in_(("pendiente", "pagado", "PENDIENTE", "PAGADO"))
             )
             .order_by(Pago.id.desc())
         )
+        return self.session.scalars(stmt).first()
+
+    def get_by_idempotency_key(self, idempotency_key: str) -> Pago | None:
+        stmt = select(Pago).where(Pago.idempotency_key == idempotency_key)
         return self.session.scalars(stmt).first()

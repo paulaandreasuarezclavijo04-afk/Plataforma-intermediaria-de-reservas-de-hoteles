@@ -150,6 +150,94 @@ class PagoService:
         self._reserva(reserva_id)
         return self.repo.list_by_reserva(reserva_id)
 
+    # ── HU-052 v1: iniciar pago con proveedor externo ───────
+    def iniciar_pago(self, reserva_id: int, metodo_pago: str, idempotency_key: str, usuario_actual) -> Pago:
+        existente = self.repo.get_by_idempotency_key(idempotency_key)
+        if existente:
+            if existente.reserva_id != reserva_id:
+                raise HTTPException(
+                    status_code=status.HTTP_409_CONFLICT,
+                    detail="La clave de idempotencia ya fue usada para otra reserva",
+                )
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ya existe un pago iniciado con esta clave de idempotencia",
+            )
+
+        reserva = self._reserva(reserva_id)
+
+        if reserva.usuario_id != usuario_actual.id:
+            raise HTTPException(
+                status_code=status.HTTP_403_FORBIDDEN,
+                detail="No tienes permisos para pagar esta reserva",
+            )
+
+        if reserva.estado in ("cancelada", "completada"):
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail=f"No se puede pagar una reserva '{reserva.estado}'",
+            )
+
+        # Si ya está pagada/confirmada con pago realizado, no duplicar
+        pago_pagado = next((p for p in reserva.pagos if p.estado in ("pagado", "PAGADO")), None)
+        if reserva.estado in ("confirmada", "pagada") or pago_pagado:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="La reserva ya tiene un pago confirmado",
+            )
+
+        # Idempotencia por reserva: si ya hay pago pendiente para esta reserva, rechazar
+        pendiente = next((p for p in reserva.pagos if p.estado in ("pendiente", "PENDIENTE") and p.idempotency_key), None)
+        if pendiente:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="Ya existe un pago pendiente para esta reserva",
+            )
+
+        # Simulación de integración con proveedor externo
+        referencia = f"PROV-{uuid.uuid4().hex[:12].upper()}"
+        url_proveedor = f"https://proveedor.example/pago/{referencia.lower()}"
+
+        # Simulación controlada
+        metodo_norm = metodo_pago.strip().upper()
+        proveedor_rechaza = metodo_norm == "PROVEEDOR_RECHAZO"
+        proveedor_timeout = metodo_norm == "PROVEEDOR_TIMEOUT"
+
+        try:
+            estado_pago = "RECHAZADO" if proveedor_rechaza else "PENDIENTE"
+            pago = Pago(
+                monto=reserva.total,
+                moneda="COP",
+                metodo=metodo_pago,
+                estado=estado_pago,
+                referencia_externa=referencia,
+                idempotency_key=idempotency_key,
+                url_proveedor=url_proveedor,
+                fecha_creacion=datetime.utcnow(),
+                fecha_pago=None,
+                reserva_id=reserva.id,
+            )
+            self.repo.add(pago)
+            self.repo.commit()
+            self.repo.flush()
+            if proveedor_timeout:
+                raise HTTPException(
+                    status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                    detail="Tiempo de espera agotado con el proveedor. Pago pendiente de conciliación.",
+                )
+            return pago
+        except HTTPException:
+            raise
+        except Exception:
+            self.db.rollback()
+            existente = self.repo.get_by_idempotency_key(idempotency_key)
+            if existente:
+                return existente
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No se pudo iniciar el pago con el proveedor",
+            )
+
     # ── Auxiliares ──────────────────────────────────────────
     def _pago(self, pago_id: int) -> Pago:
         pago = self.repo.get_by_id(pago_id)
