@@ -6,8 +6,12 @@ from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.schemas.usuario_schema import UsuarioCreate, UsuarioUpdate, UsuarioResponse, UsuarioAsignarRol
+from app.domain.password import hash_password
 from app.repository.database.models import Usuario, Rol
 from app.repository.usuario_repository import UsuarioRepository
+from app.repository.reserva_repository import ReservaRepository
+from app.repository.evaluacion_repository import EvaluacionRepository
+from app.repository.asistencia_repository import AsistenciaRepository
 
 
 class UsuarioService:
@@ -15,6 +19,9 @@ class UsuarioService:
     def __init__(self, db: Session):
         self.db = db
         self.repo = UsuarioRepository(db)
+        self.reserva_repo = ReservaRepository(db)
+        self.evaluacion_repo = EvaluacionRepository(db)
+        self.asistencia_repo = AsistenciaRepository(db)
 
     # ── Crear ───────────────────────────────────────────────
     def crear(self, data: UsuarioCreate) -> Usuario:
@@ -34,13 +41,17 @@ class UsuarioService:
                 detail=f"El rol ID {data.rol_id} no existe"
             )
 
-        # Crear usuario con password_hash vacío (será establecido por el sistema auth)
+        # Hashear contraseña
+        password_hash = hash_password(data.password)
+
+        # Crear usuario
         usuario = Usuario(
             nombres=data.nombres.strip(),
             apellidos=data.apellidos.strip(),
             correo=data.correo.strip().lower(),
             telefono=data.telefono,
             rol_id=data.rol_id,
+            password_hash=password_hash,
             activo=True
         )
         self.repo.add(usuario)
@@ -88,6 +99,9 @@ class UsuarioService:
         if "activo" in cambios:
             usuario.activo = cambios["activo"]
 
+        # No se permite actualizar la contraseña directamente desde aquí;
+        # se usaría un endpoint separado de recuperación/restablecimiento
+
         self.repo.commit()
         self.repo.flush()
         return usuario
@@ -97,25 +111,20 @@ class UsuarioService:
         usuario = self.obtener(usuario_id)
         
         # No se puede desactivar si tiene reservas, evaluaciones, asistencias, etc.
-        # Validaciones de integridad
-        from app.repository.reserva_repository import ReservaRepository
-        from app.repository.evaluacion_repository import EvaluacionRepository
-        from app.repository.asistencia_repository import AsistenciaRepository
         
-        reserva_repo = ReservaRepository(self.db)
-        evaluacion_repo = EvaluacionRepository(self.db)
-        asistencia_repo = AsistenciaRepository(self.db)
-        
-        # Verificar reservas activas
-        reservas_activas = reserva_repo.listar(usuario_id=usuario_id, incluir_inactivos=False)
+        # Verificar reservas activas usando list_filtrado
+        reservas_activas = self.reserva_repo.list_filtrado(
+            usuario_id=usuario_id, 
+            estado="pendiente"
+        )
         if reservas_activas:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
-                detail="No se puede desactivar usuario con reservas activas. Cancela o completa primero las reservas."
+                detail="No se puede desactivar usuario con reservas pendientes. Cancela o completa primero las reservas."
             )
         
-        # Verificar evaluaciones públicas
-        evaluaciones_publicas = evaluacion_repo.listar(usuario_id=usuario_id)
+        # Verificar evaluaciones públicas usando list_all
+        evaluaciones_publicas = self.evaluacion_repo.list_all(usuario_id=usuario_id)
         if evaluaciones_publicas:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -123,7 +132,7 @@ class UsuarioService:
             )
         
         # Verificar solicitudes de asistencia
-        solicitudes = asistencia_repo.listar(usuario_id=usuario_id)
+        solicitudes = self.asistencia_repo.list_filtrado(usuario_id=usuario_id)
         if solicitudes:
             raise HTTPException(
                 status_code=status.HTTP_409_CONFLICT,
@@ -148,6 +157,6 @@ class UsuarioService:
             )
         
         usuario.rol_id = data.rol_id
-        self.repo.commit()
-        self.repo.flush()
+        usuario.rol = rol  # ← CRITICAL: actualiza la relación para que rol_nombre se muestre
+        self.db.commit()
         return usuario
