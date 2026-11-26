@@ -103,6 +103,18 @@ class UsuarioService:
             raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
         return usuario
 
+    def validar_correo_disponible(self, correo: str) -> bool:
+        try:
+            existente = self.repo.get_by_correo(correo.strip().lower())
+            return existente is None
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(
+                status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+                detail="No se pudo verificar la disponibilidad del correo",
+            )
+
     def actualizar(self, usuario_id: int, data: UsuarioUpdate) -> Usuario:
         usuario = self.obtener(usuario_id)
         cambios = data.model_dump(exclude_unset=True)

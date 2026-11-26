@@ -11,6 +11,8 @@ from app.api.schemas.usuario_schema import (
     UsuarioCreate,
     UsuarioData,
     UsuarioUpdate,
+    ValidarCorreoData,
+    ValidarCorreoRequest,
 )
 from app.dependencies.auth import require_admin
 from app.repository.database.session import get_db
@@ -32,6 +34,21 @@ def crear(
 ):
     usuario = UsuarioService(db).crear(data)
     return ApiResponse(mensaje="Usuario creado correctamente", data=usuario_a_data(usuario), success=True)
+
+
+@router.post(
+    "/validar-correo",
+    response_model=ApiResponse[ValidarCorreoData],
+    summary="HU-002: validar disponibilidad de correo",
+)
+def validar_correo(data: ValidarCorreoRequest, db: Session = Depends(get_db)):
+    disponible = UsuarioService(db).validar_correo_disponible(data.correo)
+    mensaje = "El correo está disponible" if disponible else "El correo no puede utilizarse para otra cuenta"
+    return ApiResponse(
+        mensaje=mensaje,
+        data=ValidarCorreoData(correo=data.correo, disponible=disponible),
+        success=True,
+    )
 
 
 @router.get(

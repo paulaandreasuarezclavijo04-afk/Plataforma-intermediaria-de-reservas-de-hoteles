@@ -77,5 +77,24 @@ class UsuarioAsignarRol(BaseModel):
     rol: str | int = Field(..., description="Rol a asignar: admin | propietario | huesped (o rol_id)")
 
 
+class ValidarCorreoRequest(BaseModel):
+    correo: str = Field(..., min_length=1, max_length=150)
+
+    @field_validator("correo")
+    @classmethod
+    def correo_valido(cls, v: str) -> str:
+        v = v.strip().lower()
+        if not v:
+            raise ValueError("El correo es obligatorio")
+        if "@" not in v or "." not in v.split("@")[-1] or v.startswith("@") or v.endswith("@"):
+            raise ValueError("Formato de correo inválido")
+        return v
+
+
+class ValidarCorreoData(BaseModel):
+    correo: str
+    disponible: bool
+
+
 # Compatibilidad con nombres anteriores usados en otras partes
 UsuarioResponse = UsuarioData
