@@ -11,6 +11,7 @@ class UsuarioCreate(BaseModel):
     correo: str = Field(..., min_length=5, max_length=150, description="Correo electrónico único")
     telefono: str | None = Field(None, max_length=30, description="Teléfono opcional")
     rol_id: int = Field(..., description="ID del rol (1=admin, 2=propietario, 3=huesped)")
+    password: str = Field(..., min_length=6, max_length=128, description="Contraseña del usuario")
 
     @validator("correo")
     @classmethod
@@ -58,15 +59,7 @@ class UsuarioResponse(BaseModel):
     correo: str
     telefono: str | None
     activo: bool
-    rol_nombre: str
-
-    @validator("rol_nombre", always=True)
-    @classmethod
-    def obtener_rol_nombre(cls, v, values):
-        obj = values["obj"] if "obj" in values else None
-        if obj and hasattr(obj, "rol_nombre"):
-            return obj.rol_nombre
-        return "huesped"
+    rol_nombre: str | None = "huesped"
 
 
 class UsuarioAsignarRol(BaseModel):
