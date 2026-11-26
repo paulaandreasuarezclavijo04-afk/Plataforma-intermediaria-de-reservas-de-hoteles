@@ -17,6 +17,7 @@ from app.api.routers.hotel_router import router as hotel_router
 from app.api.routers.usuario_router import router as usuario_router
 from app.api.routers.habitacion_router import router as habitacion_router
 from app.api.routers.evaluacion_router import router as evaluacion_router
+from app.api.routers.notificacion_router import router as notificacion_router
 from app.api.routers.reserva_router import router as reserva_router
 
 app = FastAPI(
@@ -38,6 +39,7 @@ app.include_router(hotel_router)
 app.include_router(usuario_router)
 app.include_router(habitacion_router)
 app.include_router(evaluacion_router)
+app.include_router(notificacion_router)
 app.include_router(reserva_router)
 
 
