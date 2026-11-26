@@ -13,7 +13,7 @@ from sqlalchemy.orm import Session
 from app.repository.database.session import get_db
 
 from app.api.routers.auth_router import router as auth_router
-from app.api.routers.hotel_router import router as hotel_router
+from app.api.routers.hotel_router import router as hotel_router, v1_router as hotel_v1_router
 from app.api.routers.usuario_router import router as usuario_router
 from app.api.routers.habitacion_router import router as habitacion_router
 from app.api.routers.evaluacion_router import router as evaluacion_router
@@ -36,6 +36,7 @@ app.add_middleware(
 # ── Registro de routers ─────────────────────────────────────
 app.include_router(auth_router)
 app.include_router(hotel_router)
+app.include_router(hotel_v1_router)
 app.include_router(usuario_router)
 app.include_router(habitacion_router)
 app.include_router(evaluacion_router)

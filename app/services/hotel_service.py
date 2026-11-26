@@ -2,11 +2,15 @@
 # SERVICIO DE HOTELES — HU-016 (CRUD de hoteles)
 # ─────────────────────────────────────────────────────────────
 
+from datetime import date
+
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
 from app.api.schemas.hotel_schema import HotelCreate, HotelUpdate
+from app.domain.disponibilidad import hay_conflicto
 from app.repository.database.models import Hotel, Usuario
+from app.repository.habitacion_repository import HabitacionRepository
 from app.repository.hotel_repository import HotelRepository
 from app.repository.usuario_repository import UsuarioRepository
 
@@ -17,6 +21,7 @@ class HotelService:
         self.db = db
         self.repo = HotelRepository(db)
         self.usuarios = UsuarioRepository(db)
+        self.habitaciones = HabitacionRepository(db)
 
     # ── Consultas ───────────────────────────────────────────
     def listar(
@@ -131,3 +136,60 @@ class HotelService:
                     )
                 )
             return propietarios[0]
+
+    # ── HU-033: consultar disponibilidad por hotel ──────────
+    def consultar_disponibilidad(
+        self,
+        hotel_id: int,
+        fecha_entrada: date,
+        fecha_salida: date,
+        huespedes: int,
+    ) -> list[dict]:
+        if fecha_salida <= fecha_entrada:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="La fecha de salida debe ser posterior a la fecha de entrada",
+            )
+        if huespedes < 1:
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="El número de huéspedes debe ser mayor a 0",
+            )
+
+        hotel = self.repo.get_by_id(hotel_id)
+        if not hotel or not hotel.activo:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Hotel no encontrado",
+            )
+
+        habitaciones = self.habitaciones.list_by_hotel(hotel_id, incluir_todos=False)
+        if not any(hab.capacidad >= huespedes for hab in habitaciones):
+            raise HTTPException(
+                status_code=status.HTTP_400_BAD_REQUEST,
+                detail="Cupo inválido: ninguna habitación del hotel admite la cantidad de huéspedes solicitada",
+            )
+
+        disponibles = []
+        for hab in habitaciones:
+            if hab.estado != "disponible":
+                continue
+            if hab.capacidad < huespedes:
+                continue
+            solapadas = self.habitaciones.reservas_solapadas(hab.id, fecha_entrada, fecha_salida)
+            if hay_conflicto(fecha_entrada, fecha_salida, solapadas):
+                continue
+            disponibles.append(
+                {
+                    "id": hab.id,
+                    "tipo": hab.tipo.nombre if hab.tipo else "",
+                    "capacidad": hab.capacidad,
+                    "tarifa_noche": hab.precio_base,
+                }
+            )
+        if not disponibles:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="No hay habitaciones disponibles para las fechas y huéspedes solicitados",
+            )
+        return disponibles
