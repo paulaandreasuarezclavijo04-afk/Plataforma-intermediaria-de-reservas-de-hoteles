@@ -12,9 +12,9 @@ import jwt  # pyjwt
 from fastapi import HTTPException, status
 from sqlalchemy.orm import Session
 
-from app.api.schemas.auth_schema import LoginRequest, UsuarioSesion
-from app.domain.password import verify_password
-from app.repository.database.models import Usuario
+from app.api.schemas.auth_schema import LoginRequest, RegistroRequest, UsuarioSesion
+from app.domain.password import hash_password, verify_password
+from app.repository.database.models import Rol, Usuario
 from app.repository.usuario_repository import UsuarioRepository
 
 # Configuración del JWT
@@ -28,11 +28,8 @@ def _jwt_encode(subject: str, extra: dict | None = None) -> str:
     now = datetime.utcnow()
     exp = now + timedelta(minutes=ACCESS_TOKEN_EXPIRE_MINUTES)
     to_encode: dict = {"sub": subject, "iat": now, "exp": exp, "jti": str(uuid.uuid4())}
-    if extra:
-        to_update = to_update = {**to_encode, **extra}
-    else:
-        to_update = to_encode
-    encoded_jwt = jwt.encode(to_update, SECRET_KEY, algorithm=ALGORITHM)
+    to_encode = {**to_encode, **(extra or {})}
+    encoded_jwt = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return encoded_jwt
 
 
@@ -58,6 +55,50 @@ class AuthService:
     def __init__(self, db: Session):
         self.db = db
         self.usuarios = UsuarioRepository(db)
+
+    # ── HU-002: registrar usuario ────────────────────────────
+    def registrar(self, data: RegistroRequest) -> Usuario:
+        correo = data.correo.strip().lower()
+        existente = self.usuarios.get_by_correo(correo)
+        if existente:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="El correo electrónico ya está registrado",
+            )
+
+        rol_nombre = str(data.rol).strip().lower()
+        mapa_roles = {"admin": 1, "propietario": 2, "huesped": 3}
+        rol_id = mapa_roles.get(rol_nombre)
+        if rol_id is None:
+            rol_obj = self.db.query(Rol).filter(Rol.nombre.ilike(rol_nombre)).first()
+            if not rol_obj:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"El rol '{data.rol}' no existe",
+                )
+            rol_id = rol_obj.id
+        else:
+            rol_obj = self.db.query(Rol).filter(Rol.id == rol_id).first()
+            if not rol_obj:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=f"El rol '{data.rol}' no existe",
+                )
+
+        usuario = Usuario(
+            nombres=data.nombres.strip(),
+            apellidos=data.apellidos.strip(),
+            correo=correo,
+            telefono=data.telefono,
+            rol_id=rol_id,
+            password_hash=hash_password(data.password),
+            activo=True,
+            correo_verificado=False,
+        )
+        self.db.add(usuario)
+        self.db.commit()
+        self.db.refresh(usuario)
+        return usuario
 
     # ── HU-011: iniciar sesión (devuelve JWT) ────────────────
     def login(self, data: LoginRequest) -> dict:
