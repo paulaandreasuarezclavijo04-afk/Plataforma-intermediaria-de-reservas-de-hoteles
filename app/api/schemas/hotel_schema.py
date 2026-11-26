@@ -2,7 +2,13 @@
 # SCHEMAS DE HOTEL — HU-016 (CRUD de hoteles)
 # ─────────────────────────────────────────────────────────────
 
+from datetime import date
+from decimal import Decimal
+from typing import Generic, TypeVar
+
 from pydantic import BaseModel, ConfigDict, Field, field_validator
+
+T = TypeVar("T")
 
 
 class HotelCreate(BaseModel):
@@ -111,3 +117,22 @@ class HotelResponse(BaseModel):
     activo: bool
     propietario_id: int
     propietario_nombre: str | None = None
+
+
+class ApiResponse(BaseModel, Generic[T]):
+    mensaje: str
+    data: T | None = None
+    success: bool = True
+
+
+class HabitacionDisponibilidad(BaseModel):
+    id: int
+    tipo: str
+    capacidad: int
+    tarifa_noche: Decimal
+
+
+class DisponibilidadHotelData(BaseModel):
+    fecha_entrada: date
+    fecha_salida: date
+    habitaciones: list[HabitacionDisponibilidad]
