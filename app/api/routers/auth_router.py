@@ -124,16 +124,41 @@ def restablecer_password(
     data: RecuperarPasswordRequest,
     db: Session = Depends(get_db)
 ):
+    from datetime import datetime
+
+    from app.domain.password import hash_password
     from app.repository.database.models import Usuario
-    usuario = db.query(Usuario).filter(
-        Usuario.correo == data.correo.lower()
-    ).first()
+    from app.repository.token_repository import TokenRepository
+    from app.services.auth_service import _jwt_decode
+
+    usuario = None
+    token_seguro = TokenRepository(db).get_by_token(data.token)
+
+    if token_seguro:
+        if token_seguro.tipo != "recuperacion":
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido para recuperación")
+        if token_seguro.usado:
+            raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="El token ya fue utilizado")
+        if token_seguro.expira < datetime.utcnow():
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El token ha expirado")
+        usuario = db.query(Usuario).filter(Usuario.id == token_seguro.usuario_id).first()
+    else:
+        try:
+            payload = _jwt_decode(data.token)
+            correo = payload.get("sub")
+        except HTTPException:
+            raise
+        except Exception:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido")
+        if not correo:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Token inválido: no contiene usuario")
+        usuario = db.query(Usuario).filter(Usuario.correo == correo.lower()).first()
+
     if not usuario:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Usuario no encontrado"
-        )
-    # Simulación: en un sistema real validarías el token primero
-    return MensajeResponse(
-        mensaje=f"Contraseña actualizada para {usuario.correo} (simulado)"
-    )
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
+
+    usuario.password_hash = hash_password(data.nueva_password)
+    if token_seguro:
+        token_seguro.usado = True
+    db.commit()
+    return MensajeResponse(mensaje=f"Contraseña actualizada para {usuario.correo}")

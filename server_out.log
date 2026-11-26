@@ -48,3 +48,63 @@ INFO:     127.0.0.1:54476 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:54476 - "GET /v1/models HTTP/1.1" 404 Not Found
 INFO:     127.0.0.1:63252 - "GET /health HTTP/1.1" 200 OK
 INFO:     127.0.0.1:63252 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54453 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:54453 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55043 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55043 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55043 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55043 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55043 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55043 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56942 - "POST /api/v1/notificaciones/confirmaciones-reserva HTTP/1.1" 409 Conflict
+INFO:     127.0.0.1:57100 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:57100 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59396 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59396 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:59230 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:59230 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:64108 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:64108 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61790 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61790 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:55172 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:55172 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62878 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62878 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62881 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:62881 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61612 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61612 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:61182 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:61182 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:54302 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52510 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52510 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63144 - "GET /docs HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63144 - "GET /openapi.json HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51913 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:51913 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56088 - "POST /api/auth/recuperar-password HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60314 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60314 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:60318 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:60318 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63621 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63621 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62478 - "POST /api/auth/recuperar-password HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:49672 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:58122 - "POST /api/auth/restablecer-password HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:58131 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:58131 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:52362 - "POST /api/auth/restablecer-password HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:52368 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:52368 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:62699 - "POST /api/auth/restablecer-password HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:63204 - "POST /api/auth/restablecer-password HTTP/1.1" 422 Unprocessable Content
+INFO:     127.0.0.1:63208 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63208 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:63221 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:63221 - "GET /v1/models HTTP/1.1" 404 Not Found
+INFO:     127.0.0.1:56698 - "GET /health HTTP/1.1" 200 OK
+INFO:     127.0.0.1:56698 - "GET /v1/models HTTP/1.1" 404 Not Found
