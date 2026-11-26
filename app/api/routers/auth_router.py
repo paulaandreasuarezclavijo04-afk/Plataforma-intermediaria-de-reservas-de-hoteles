@@ -47,7 +47,7 @@ def registro(data: RegistroRequest, db: Session = Depends(get_db)):
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     result = AuthService(db).login(data)
     return LoginResponse(
-        mensaje=result["mensaje"],
+        mensaje="Login exitoso",
         usuario=result["usuario"]
     )
 
