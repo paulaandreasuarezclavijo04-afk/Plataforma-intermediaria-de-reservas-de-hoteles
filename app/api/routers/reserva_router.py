@@ -40,15 +40,14 @@ def listar(
     )
 
 
-# HU-036 - Crear reserva (silenciado en rama HU-039)
-# @router.post(
-#     "",
-#     response_model=ReservaResponse,
-#     status_code=status.HTTP_201_CREATED,
-#     summary="HU-036: crear reserva (con control de disponibilidad)"
-# )
-# def crear(data: ReservaCreate, db: Session = Depends(get_db)):
-#     return ReservaService(db).crear(data)
+@router.post(
+    "",
+    response_model=ReservaResponse,
+    status_code=status.HTTP_201_CREATED,
+    summary="HU-036: crear reserva (con control de disponibilidad)"
+)
+def crear(data: ReservaCreate, db: Session = Depends(get_db)):
+    return ReservaService(db).crear(data)
 
 
 @router.get(

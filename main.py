@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────
 # PUNTO DE ENTRADA — crea la app FastAPI y registra los routers
 # Capas: api (routers/schemas) → services → repository → models
-# HU-016: CRUD de hoteles / HU-001: CRUD de usuarios / HU-021: CRUD de habitaciones / HU-076: CRUD de evaluaciones / HU-039: Consultar reserva
+# HU-016: CRUD de hoteles / HU-001: CRUD de usuarios / HU-021: CRUD de habitaciones / HU-076: CRUD de evaluaciones / HU-036: Crear reserva / HU-039: Consultar reserva
 # ─────────────────────────────────────────────────────────────
 
 from fastapi import FastAPI, Depends, HTTPException, status
@@ -18,7 +18,7 @@ from app.api.routers.reserva_router import router as reserva_router
 
 app = FastAPI(
     title="API Plataforma Intermediaria de Reservas de Hoteles",
-    description="CRUD de hoteles (HU-016), usuarios (HU-001), habitaciones (HU-021), evaluaciones (HU-076) y reservas (HU-039) con FastAPI + SQLAlchemy + SQLite",
+    description="CRUD de hoteles (HU-016), usuarios (HU-001), habitaciones (HU-021), evaluaciones (HU-076) y reservas (HU-036, HU-039) con FastAPI + SQLAlchemy + SQLite",
     version="1.0.0",
 )
 
