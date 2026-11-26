@@ -1,7 +1,7 @@
 # ─────────────────────────────────────────────────────────────
 # PUNTO DE ENTRADA — crea la app FastAPI y registra los routers
 # Capas: api (routers/schemas) → services → repository → models
-# HU-016: CRUD de hoteles
+# HU-016: CRUD de hoteles / HU-001: CRUD de usuarios
 # ─────────────────────────────────────────────────────────────
 
 from fastapi import FastAPI, Depends, HTTPException, status
@@ -10,11 +10,12 @@ from sqlalchemy.orm import Session
 
 from app.repository.database.session import get_db
 
-from app.api.routers.hotel_router import router
+from app.api.routers.hotel_router import router as hotel_router
+from app.api.routers.usuario_router import router as usuario_router
 
 app = FastAPI(
-    title="API Plataforma Intermediaria de Reservas de Hoteles - HU-016",
-    description="CRUD de hoteles (HU-016) con FastAPI + SQLAlchemy + SQLite",
+    title="API Plataforma Intermediaria de Reservas de Hoteles",
+    description="CRUD de hoteles (HU-016) y usuarios (HU-001) con FastAPI + SQLAlchemy + SQLite",
     version="1.0.0",
 )
 
@@ -26,7 +27,8 @@ app.add_middleware(
 )
 
 # ── Registro de routers ─────────────────────────────────────
-app.include_router(router)
+app.include_router(hotel_router)
+app.include_router(usuario_router)
 
 
 # ── Health check (público) ──────────────────────────────────

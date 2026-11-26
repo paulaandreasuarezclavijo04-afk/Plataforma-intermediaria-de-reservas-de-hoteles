@@ -44,10 +44,11 @@ class HotelService:
 
     # ── Crear ───────────────────────────────────────────────
     def crear(self, data: HotelCreate) -> Hotel:
+        # Validar y resolver el propietario
         propietario = self._resolver_propietario(data.propietario_id)
 
         hotel = Hotel(
-            nombre=data.nombre.strip().title(),
+            nombre=data.nombre.strip(),
             descripcion=data.descripcion,
             direccion=data.direccion.strip(),
             ciudad=data.ciudad.strip().title(),
@@ -65,6 +66,14 @@ class HotelService:
     def actualizar(self, hotel_id: int, data: HotelUpdate) -> Hotel:
         hotel = self.obtener(hotel_id, incluir_inactivo=True)
         cambios = data.model_dump(exclude_unset=True)
+
+        # Si se está cambiando el propietario, validar el nuevo propietario
+        if "propietario_id" in cambios and cambios["propietario_id"] is not None:
+            nuevo_propietario = self._resolver_propietario(cambios["propietario_id"])
+            # Si el propietario_id cambió, lo removemos de los cambios para que no se establezca como atributo directo
+            # ya que el modelo Hotel tiene propietario_id como columna, pero la lógica de negocio
+            # ya se encargó de validarlo y asignarlo
+            cambios.pop("propietario_id")
 
         for campo, valor in cambios.items():
             if valor is None and campo != "descripcion":
@@ -101,17 +110,24 @@ class HotelService:
                     status_code=status.HTTP_404_NOT_FOUND,
                     detail="El propietario indicado no existe"
                 )
-            return propietario
-
-        propietarios = self.usuarios.list_all(
-            activo=True, rol="propietario", limit=1
-        )
-        if not propietarios:
-            raise HTTPException(
-                status_code=status.HTTP_400_BAD_REQUEST,
-                detail=(
-                    "No hay usuarios con rol 'propietario'; "
-                    "crea uno primero o envía propietario_id"
+            # Validar que el usuario tenga rol de propietario y esté activo
+            if propietario.rol.nombre != "propietario" or not propietario.activo:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail="El usuario indicado no tiene rol de propietario o está inactivo"
                 )
+            return propietario
+        else:
+            # Si no se envía propietario_id, obtener el primero activo
+            propietarios = self.usuarios.list_all(
+                activo=True, rol="propietario", limit=1
             )
-        return propietarios[0]
+            if not propietarios:
+                raise HTTPException(
+                    status_code=status.HTTP_400_BAD_REQUEST,
+                    detail=(
+                        "No hay usuarios con rol 'propietario' activo; "
+                        "crea uno primero o envía propietario_id"
+                    )
+                )
+            return propietarios[0]
