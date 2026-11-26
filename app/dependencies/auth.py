@@ -2,11 +2,12 @@
 # DEPENDENCIA — Obtener el usuario actual del token JWT
 # ─────────────────────────────────────────────────────────────
 
-from fastapi import Depends, HTTPException, security
+from fastapi import Depends, HTTPException, status
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy.orm import Session
 
 from app.repository.database.session import get_db
+from app.repository.database.models import Usuario
 from app.services.auth_service import AuthService, _jwt_decode
 
 reusable_bearer = HTTPBearer(auto_error=False)
@@ -15,7 +16,7 @@ reusable_bearer = HTTPBearer(auto_error=False)
 def get_current_user(
     credentials: HTTPAuthorizationCredentials = Depends(reusable_bearer),
     db: Session = Depends(get_db)
-) -> object:
+) -> Usuario:
     """
     Dependency que:
     1. Extrae el token del header Authorization: Bearer <token>
@@ -44,8 +45,19 @@ def get_current_user(
     except Exception as e:
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail=f"Error al decodificar token: {e}",
+            detail="Token inválido o expirado",
         )
 
     usuario = AuthService(db).get_current_user(token)
     return usuario
+
+
+def require_admin(current_user: Usuario = Depends(get_current_user)) -> Usuario:
+    """Permite acceso solo a usuarios con rol administrador."""
+    rol = current_user.rol.nombre.lower() if current_user.rol else ""
+    if rol != "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="No tiene permisos para realizar esta operación",
+        )
+    return current_user

@@ -25,17 +25,13 @@ router = APIRouter(prefix="/api/auth", tags=["Auth"])
     "/registro",
     response_model=MensajeResponse,
     status_code=status.HTTP_201_CREATED,
-    summary="HU-001/HU-002: registrar usuario y enviar verificación"
+    summary="HU-002: registrar usuario y enviar verificación"
 )
 def registro(data: RegistroRequest, db: Session = Depends(get_db)):
-    # Nota: el JWT se emitirá en v2 cuando haya sesión activa.
-    # Por ahora, registro simular.
-    usuario, token = AuthService(db).registrar(data) if hasattr(
-        AuthService(db), 'registrar'
-    ) else (None, None)
+    usuario = AuthService(db).registrar(data)
     return MensajeResponse(
-        mensaje="Usuario registrado correctamente (sin JWT en esta versión)",
-        detalle="Usa POST /api/auth/login para obtener tu token"
+        mensaje="Usuario registrado correctamente",
+        detalle=f"Usuario {usuario.correo} creado. Usa POST /api/auth/login para obtener tu token."
     )
 
 
@@ -91,8 +87,8 @@ def validar_correo(data: ValidarCorreoRequest, db: Session = Depends(get_db)):
             detail="Usuario no encontrado"
         )
     usuario.correo_verificado = True
-    # No commit aquí para no afectar la sesión global; el flujo real
-    # usaría el token JWT real.
+    db.commit()
+    db.refresh(usuario)
     return MensajeResponse(
         mensaje=f"Correo verificado para {usuario.correo}"
     )

@@ -71,34 +71,33 @@ def obtener(reserva_id: int, db: Session = Depends(get_db)):
     return detalle
 
 
-# HU-068 - Enviar confirmación de reserva (silenciado en rama HU-039)
-# @router.post(
-#     "/{reserva_id}/confirmar",
-#     response_model=ReservaResponse,
-#     summary="HU-068: confirmar reserva y generar la notificación"
-# )
-# def confirmar(reserva_id: int, db: Session = Depends(get_db)):
-#     reserva, _ = ReservaService(db).confirmar(reserva_id)
-#     return reserva
-#
-#
-# @router.get(
-#     "/{reserva_id}/confirmacion",
-#     response_model=ConfirmacionResponse,
-#     summary="HU-068: consultar la confirmación enviada"
-# )
-# def obtener_confirmacion(reserva_id: int, db: Session = Depends(get_db)):
-#     servicio = ReservaService(db)
-#     reserva = servicio.obtener(reserva_id)
-#     notificacion = servicio.obtener_confirmacion(reserva_id)
-#     return ConfirmacionResponse(
-#         reserva_id=reserva.id,
-#         estado=reserva.estado,
-#         notificacion_id=notificacion.id if notificacion else None,
-#         asunto=notificacion.asunto if notificacion else None,
-#         contenido=notificacion.contenido if notificacion else None,
-#         fecha=notificacion.fecha_envio if notificacion else None
-#     )
+@router.post(
+    "/{reserva_id}/confirmar",
+    response_model=ReservaResponse,
+    summary="HU-068: confirmar reserva y generar la notificación"
+)
+def confirmar(reserva_id: int, db: Session = Depends(get_db)):
+    reserva, _ = ReservaService(db).confirmar(reserva_id)
+    return reserva
+
+
+@router.get(
+    "/{reserva_id}/confirmacion",
+    response_model=ConfirmacionResponse,
+    summary="HU-068: consultar la confirmación enviada"
+)
+def obtener_confirmacion(reserva_id: int, db: Session = Depends(get_db)):
+    servicio = ReservaService(db)
+    reserva = servicio.obtener(reserva_id)
+    notificacion = servicio.obtener_confirmacion(reserva_id)
+    return ConfirmacionResponse(
+        reserva_id=reserva.id,
+        estado=reserva.estado,
+        notificacion_id=notificacion.id if notificacion else None,
+        asunto=notificacion.asunto if notificacion else None,
+        contenido=notificacion.contenido if notificacion else None,
+        fecha=notificacion.fecha_envio if notificacion else None
+    )
 #
 #
 # @router.post(
