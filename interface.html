@@ -1,0 +1,1296 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plataforma Intermediaria de Reservas de Hoteles</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/minimalist-font-awesome.css">
+    <style>
+        :root {
+            --primary: #6c63ff;
+            --primary-dark: #5a52cc;
+            --success: #28a745;
+            --info: #17a2b8;
+            --warning: #ffc107;
+            --danger: #dc3545;
+            --light: #f8f9fa;
+            --dark: #343a40;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+            min-height: 100vh;
+            margin: 0;
+        }
+
+        .navbar {
+            background: linear-gradient(135deg, #2d3436 0%, #636e72 100%);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+
+        .nav-link {
+            color: #fff !important;
+            font-weight: 500;
+        }
+
+        .nav-link:hover {
+            background: rgba(255,255,255,0.1);
+            border-radius: 4px;
+        }
+
+        .card {
+            border: none;
+            border-radius: 10px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
+            margin-bottom: 1.5rem;
+        }
+
+        .card-header {
+            background: #fff;
+            border-bottom: 1px solid #eee;
+            border-radius: 10px 10px 0 0 !important;
+            padding: 1rem 1.25rem;
+            font-weight: 600;
+            color: var(--dark);
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-1px);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-weight: 500;
+            border-radius: 5px;
+            transition: all 0.3s ease;
+        }
+
+        .btn-secondary:hover {
+            background: #5a6268;
+        }
+
+        .form-control {
+            border: 2px solid #e0e0e0;
+            border-radius: 7px;
+            padding: 0.7rem 1rem;
+            font-size: 0.95rem;
+            transition: border-color 0.3s ease;
+        }
+
+        .form-control:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
+        }
+
+        .form-label {
+            font-weight: 500;
+            margin-bottom: 0.5rem;
+            display: block;
+        }
+
+        .alert {
+            border: none;
+            border-radius: 7px;
+            padding: 0.8rem 1.25rem;
+        }
+
+        .tab-content > div:not(:first-child) {
+            display: none;
+        }
+
+        .table thead th {
+            background: #f8f9fa;
+            border: none;
+            padding: 0.75rem;
+            font-weight: 500;
+            color: var(--dark);
+        }
+
+        .table tbody tr {
+            border-bottom: 1px solid #dee2e6;
+        }
+
+        .table tbody tr:hover {
+            background: #f8f9fa;
+        }
+
+        .spinner {
+            width: 20px;
+            height: 20px;
+            border: 2px solid #f3f3f3;
+            border-top: 2px solid var(--primary);
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .badge-moderada { background: #ffc107; color: #000; padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.75rem; }
+        .badge-alta { background: #dc3545; color: #fff; padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.75rem; }
+        .badge-baja { background: #28a745; color: #fff; padding: 0.25rem 0.6rem; border-radius: 12px; font-size: 0.75rem; }
+
+        @media (max-width: 768px) {
+            .btn { width: 100%; margin-bottom: 0.5rem; }
+            .card-grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Login Screen -->
+    <div id="loginScreen" class="vh-100 d-flex align-items-center justify-center bg-gradient-primary">
+        <div class="card p-4 p-md-5 w-100 max-w-md" style="background: white; border-radius: 15px;">
+            <div class="text-center mb-4">
+                <i class="fa fa-hotel fa-4x text-primary mb-3"></i>
+            </div>
+            <h2 class="mb-3">Plataforma Intermediaria</h2>
+            <p class="text-muted mb-4">Sistema de reservas de hoteles</p>
+            
+            <!-- Login Form -->
+            <form id="loginForm" novalidate>
+                <div class="mb-3">
+                    <label class="form-label"><i class="fa fa-user me-2"></i>Correo electrónico</label>
+                    <input type="email" id="loginEmail" class="form-control" placeholder="ejemplo@correo.com" required>
+                </div>
+                <div class="mb-4">
+                    <label class="form-label"><i class="fa fa-lock me-2"></i>Contraseña</label>
+                    <input type="password" id="loginPassword" class="form-control" placeholder="••••••••" required>
+                </div>
+                
+                <div class="d-grid">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fa fa-sign-in me-2"></i>Ingresar
+                    </button>
+                </div>
+                
+                <div class="text-center mt-3 small">
+                    <a href="#" class="text-muted" id="forgotLink">¿Olvidó su contraseña?</a>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="app" class="display-none">
+        <!-- Navbar -->
+        <nav class="navbarnavbar-expand-lg">
+            <div class="container-fluid">
+                <a class="navbar-brand" href="#" style="color: white;">
+                    <i class="fa fa-hotel me-2"></i>Hotel Platform
+                </a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarnav">
+                    <ul class="navbar-nav me-auto">
+                        <li class="nav-item">
+                            <a class="nav-link active" href="#" id="dashboardLink">
+                                <i class="fa fa-tachometer-alt me-2"></i>Inicio
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="hotelsLink">
+                                <i class="fa fa-building me-2"></i>Hoteles
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="roomsLink">
+                                <i class="fa fa-bed me-2"></i>Habitaciones
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="searchLink">
+                                <i class="fa fa-search me-2"></i>Buscar
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#" id="reservasLink">
+                                <i class="fa fa-calendar me-2"></i>Mis Reservas
+                            </a>
+                        </li>
+                    </ul>
+                    
+                    <ul class="navbar-nav">
+                        <li class="nav-item dropdown">
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button" data-bs-toggle="dropdown">
+                                <i class="fa fa-user me-2"></i>Bienvenido
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end">
+                                <li><a class="dropdown-item" href="#" id="profileLink">
+                                    <i class="fa fa-user-circle me-2"></i>Perfil
+                                </a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item text-danger" href="#" id="logoutLink">
+                                    <i class="fa fa-sign-out me-2"></i>Cerrar sesión
+                                </a></li>
+                            </ul>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <!-- Main Content -->
+        <main class="p-4 p-md-5">
+            <!-- Dashboard Section -->
+            <section id="dashboardSection" class="mb-4">
+                <div class="row">
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card text-white bg-primary o-card">
+                            <div class="card-header">Hoteles Registrados</div>
+                            <div class="card-body">
+                                <h3 class="card-title" id="totalHotels">Cargando...</h3>
+                                <p class="card-text text-light small">Total de hoteles en la plataforma</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card text-white bg-success o-card">
+                            <div class="card-header">Reservas Activas</div>
+                            <div class="card-body">
+                                <h3 class="card-title" id="activeReservas">Cargando...</h3>
+                                <p class="card-text text-light small">Reservas confirmadas</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card text-white bg-info o-card">
+                            <div class="card-header">Usuarios Registrados</div>
+                            <div class="card-body">
+                                <h3 class="card-title" id="totalUsers">Cargando...</h3>
+                                <p class="card-text text-light small">Total de usuarios</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6 col-lg-3 mb-3">
+                        <div class="card text-warning o-card">
+                            <div class="card-header">Disponibilidad</div>
+                            <div class="card-body">
+                                <h3 class="card-title" id="disponibilidad">Cargando...</h3>
+                                <p class="card-text text-light small">Habitaciones disponibles</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Hotels Management -->
+            <section id="hotelsSection" class="mb-4 display-none">
+                <h4><i class="fa fa-building me-2"></i>Gestión de Hoteles</h4>
+                <div class="row mb-3">
+                    <div class="col-md-6">
+                        <button class="btn btn-primary w-100" onclick="showAddHotelForm()">
+                            <i class="fa fa-plus me-2"></i>Añadir Hotel
+                        </button>
+                    </div>
+                    <div class="col-md-6">
+                        <button class="btn btn-secondary w-100" onclick="refreshHotels()">
+                            <i class="fa fa-refresh me-2"></i>Actualizar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="hotelsTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Nombre</th>
+                                <th>Ciudad</th>
+                                <th>País</th>
+                                <th>Propietario</th>
+                                <th style="width: 120px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="hotelsTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <!-- Add Hotel Form -->
+                <div id="addHotelForm" class="mt-4 card display-none">
+                    <div class="card-header">Nuevo Hotel</div>
+                    <div class="card-body">
+                        <form id="hotelForm">
+                            <input type="hidden" id="hotelId">
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Nombre *</label>
+                                    <input type="text" class="form-control" id="hotelNombre" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">País *</label>
+                                    <input type="text" class="form-control" id="hotelPais" required>
+                                </div>
+                            </div>
+                            <div class="row mb-3">
+                                <div class="col-md-6">
+                                    <label class="form-label">Ciudad *</label>
+                                    <input type="text" class="form-control" id="hotelCiudad" required>
+                                </div>
+                                <div class="col-md-6">
+                                    <label class="form-label">Teléfono</label>
+                                    <input type="text" class="form-control" id="hotelTelefono">
+                                </div>
+                            </div>
+                            <div class="d-grid">
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fa fa-save me-2"></i>Guardar Hotel
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Search Section -->
+            <section id="searchSection" class="mb-4 display-none">
+                <h4><i class="fa fa-search me-2"></i>Buscar Alojamiento</h4>
+                <form id="searchForm" onSubmit="event.preventDefault(); performSearch()">
+                    <div class="row g-3">
+                        <div class="col-md-4">
+                            <label class="form-label">Ciudad</label>
+                            <input type="text" class="form-control" id="searchCity" placeholder="Ej: Bucaramanga">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Entrada</label>
+                            <input type="date" class="form-control" id="searchCheckIn">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Salida</label>
+                            <input type="date" class="form-control" id="searchCheckOut">
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Huéspedes</label>
+                            <input type="number" class="form-control" id="searchGuests" min="1" max="20" value="2">
+                        </div>
+                    </div>
+                    <div class="row g-2">
+                        <div class="col-md-3">
+                            <label class="form-label">Tipo</label>
+                            <select class="form-select" id="searchTipo">
+                                <option value="">Todos los tipos</option>
+                                <option value="Doble">Doble</option>
+                                <option value="Suite">Suite</option>
+                            </select>
+                        </div>
+                        <div class="col-md-3">
+                            <label class="form-label">Precio Máx</label>
+                            <input type="number" class="form-control" id="searchMaxPrice" step="100000" placeholder="COP">
+                        </div>
+                    </div>
+                    <div class="d-grid mt-3">
+                        <button type="submit" class="btn btn-primary">
+                            <i class="fa fa-search me-2"></i>Buscar Disponibilidad
+                        </button>
+                    </div>
+                </form>
+                
+                <div id="searchResults" class="mt-3 card display-none">
+                    <div class="card-header">
+                        <i class="fa fa-list me-2"></i>Resultados de Búsqueda
+                        <span class="badge bg-secondary float-end" id="resultsCount">0</span>
+                    </div>
+                    <div class="card-body p-0" id="searchResultsBody">
+                    </div>
+                </div>
+            </section>
+
+            <!-- Reservas Section -->
+            <section id="reservasSection" class="mb-4 display-none">
+                <h4><i class="fa fa-calendar me-2"></i>Mis Reservas</h4>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select class="form-select" id="reservaFilter">
+                            <option value="all">Todas las reservas</option>
+                            <option value="pendiente">Pendientes</option>
+                            <option value="confirmada">Confirmadas</option>
+                            <option value="completada">Completadas</option>
+                            <option value="cancelada">Canceladas</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="usuarioFilter">
+                            <option value="all">Todos los usuarios</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" onclick="refreshReservas()">
+                            <i class="fa fa-refresh me-2"></i>Actualizar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="reservasTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Hotel</th>
+                                <th>Fechas</th>
+                                <th>Huéspedes</th>
+                                <th>Total</th>
+                                <th style="width: 120px;">Estado</th>
+                            </tr>
+                        </thead>
+                        <tbody id="reservasTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Pagos Section -->
+            <section id="pagosSection" class="mb-4 display-none">
+                <h4><i class="fa fa-money-bill-wave me-2"></i>Gestión de Pagos</h4>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select class="form-select" id="pagoFilter">
+                            <option value="all">Todos los pagos</option>
+                            <option value="pendiente">Pendientes</option>
+                            <option value="pagado">Pagados</option>
+                            <option value="reembolsado">Reembolsados</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" onclick="refreshPagos()">
+                            <i class="fa fa-refresh me-2"></i>Actualizar
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-secondary w-100" onclick="simularPago()">
+                            <i class="fa fa-play me-2"></i>Probar Pago
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="pagosTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Reserva</th>
+                                <th>Monto</th>
+                                <th>Método</th>
+                                <th>Estado</th>
+                                <th style="width: 130px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="pagosTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+
+            <!-- Evaluaciones Section -->
+            <section id="evaluacionesSection" class="mb-4 display-none">
+                <h4><i class="fa fa-star me-2"></i>Evaluaciones</h4>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select class="form-select" id="evalHotelFilter">
+                            <option value="all">Todos los hoteles</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" onclick="refreshEvaluaciones()">
+                            <i class="fa fa-refresh me-2"></i>Actualizar
+                        </button>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="evalTipo">
+                            <option value="all">Ver todas</option>
+                            <option value="publicas">Evaluaciones públicas</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="evaluacionesTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Hotel</th>
+                                <th>Usuario</th>
+                                <th>Puntuación</th>
+                                <th>Comentario</th>
+                                <th style="width: 120px;">Respuesta Hotel</th>
+                            </tr>
+                        </thead>
+                        <tbody id="evaluacionesTableBody">
+                        </tbody>
+                    </table>
+                </div>
+                
+                <div class="mt-3 card">
+                    <div class="card-header">Resumen del Hotel</div>
+                    <div class="card-body">
+                        <div class="row">
+                            <div class="col-6">
+                                <h5>Total Evaluaciones <span id="resumenTotal">0</span></h5>
+                            </div>
+                            <div class="col-6">
+                                <h5>Promedio <span id="resumenPromedio">0.00</span>/5</h5>
+                            </div>
+                        </div>
+                        <div class="mt-3">
+                            <h6>Distribución de Puntuaciones</h6>
+                            <div id="distribucionContainer">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Asistencias Section -->
+            <section id="asistenciasSection" class="mb-4 display-none">
+                <h4><i class="fa fa-ticket me-2"></i>Solicitudes de Asistencia</h4>
+                <div class="row mb-3">
+                    <div class="col-md-4">
+                        <select class="form-select" id="asistTypeFilter">
+                            <option value="all">Todos los tipos</option>
+                            <option value="consulta">Consulta</option>
+                            <option value="queja">Queja</option>
+                            <option value="solicitud">Solicitud</option>
+                            <option value="incidencia">Incidencia</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <select class="form-select" id="asistStateFilter">
+                            <option value="all">Todos los estados</option>
+                            <option value="abierta">Abierta</option>
+                            <option value="en_proceso">En proceso</option>
+                            <option value="respondida">Respondida</option>
+                            <option value="cerrada">Cerrada</option>
+                        </select>
+                    </div>
+                    <div class="col-md-4">
+                        <button class="btn btn-primary w-100" onclick="refreshAsistencias()">
+                            <i class="fa fa-refresh me-2"></i>Actualizar
+                        </button>
+                    </div>
+                </div>
+                <div class="table-responsive">
+                    <table class="table align-middle mb-0" id="asistenciasTable">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>Asunto</th>
+                                <th>Tipo</th>
+                                <th>Estado</th>
+                                <th>Fecha Creación</th>
+                                <th style="width: 130px;">Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody id="asistenciasTableBody">
+                        </tbody>
+                    </table>
+                </div>
+            </section>
+        </main>
+    </div>
+
+    <!-- Modal for Actions -->
+    <div class="modal fade" id="actionModal" tabindex="-1">
+        <div class="modal-dialog modal-sm">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Acción</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="actionForm">
+                        <input type="hidden" id="modalId">
+                        <input type="hidden" id="modalType">
+                        <p id="modalMessage">¿Está seguro de realizar esta acción?</p>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">No</button>
+                    <button type="submit" form="actionForm" class="btn btn-primary">Sí</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toastLive" class="toast" role="alert" aria-live="assertive" aria-atomic="true">
+            <div class="toast-header">
+                <strong class="me-auto">Sistema</strong>
+                <button type="button" class="btn-close" data-bs-dismiss="toast" aria-label="Close"></button>
+            </div>
+            <div class="toast-body" id="toastMessage">
+                Mensaje
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        // API Base URL
+        const API_BASE = 'http://127.0.0.1:8000';
+        
+        // State
+        let token = null;
+        let usuarioActual = null;
+
+        // ===== INICIALIZACIÓN =====
+        document.addEventListener('DOMContentLoaded', function() {
+            // Mostrar pantalla de login, ocultar app
+            document.getElementById('loginScreen').classList.remove('display-none');
+            document.getElementById('app').classList.add('display-none');
+            
+            // Cargar datos iniciales si ya hay sesión
+            verificarSesion();
+            
+            // Event listeners
+            document.getElementById('loginForm').addEventListener('submit', manejarLogin);
+            document.getElementById('logoutLink').addEventListener('click', cerrarSesion);
+            document.getElementById('forgotLink').addEventListener('click', e => {
+                e.preventAlert('Funcionalidad de recuperación por implementar');
+            });
+        });
+
+        // ===== VERIFICAR SESIÓN =====
+        async function verificarSesion() {
+            // Intentar obtener usuario actual del servidor
+            try {
+                const res = await fetch(`${API_BASE}/api/usuario-me`, {
+                    headers: { 'Authorization': `Bearer ${localStorage.getItem('token')}` }
+                });
+                
+                if (res.status === 200) {
+                    const data = await res.json();
+                    usuarioActual = data.usuario;
+                    token = localStorage.getItem('token');
+                    mostrarApp();
+                    cargarDashboard();
+                } else {
+                    // Token inválido, mostrar login
+                    cerrarSesionLocal();
+                }
+            } catch (err) {
+                cerrarSesionLocal();
+            }
+        }
+
+        function cerrarSesionLocal() {
+            localStorage.removeItem('token');
+            usuarioActual = null;
+            token = null;
+            document.getElementById('loginScreen').classList.remove('display-none');
+            document.getElementById('app').classList.add('display-none');
+            mostrarToast('Sesión cerrada. Por favor, inicie sesión nuevamente.', 'info');
+        }
+
+        // ===== MANEJAR LOGIN =====
+        async function manejarLogin(e) {
+            e.preventDefault();
+            
+            const email = document.getElementById('loginEmail').value.trim();
+            const password = document.getElementById('loginPassword').value;
+            
+            // Mostrar loading
+            const btn = document.querySelector('#loginForm .btn-primary');
+            const originalText = btn.innerHTML;
+            btn.innerHTML = '<div class="spinner"></span> Ingresando...';
+            btn.disabled = true;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/auth/login`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ correo: email, password: password })
+                });
+                
+                const data = await res.json();
+                
+                if (res.status === 200) {
+                    token = data.access_token;
+                    localStorage.setItem('token', token);
+                    usuarioActual = data.usuario;
+                    mostrarApp();
+                    cargarDashboard();
+                    mostrarToast(`Bienvenido ${usuarioActual.nombres}`, 'success');
+                } else {
+                    mostrarToast(data.detail || 'Error en el login', 'danger');
+                }
+            } catch (err) {
+                mostrarToast('Error de conexión con el servidor', 'danger');
+            } finally {
+                btn.innerHTML = originalText;
+                btn.disabled = false;
+            }
+        }
+
+        // ===== MOSTRAR/OCULTAR APLICACIÓN =====
+        function mostrarApp() {
+            document.getElementById('loginScreen').classList.add('display-none');
+            document.getElementById('app').classList.remove('display-none');
+            
+            // Actualizar navbar con nombre de usuario
+            const userName = document.querySelector('#userDropdown .fw-normal');
+            if (userName) {
+                userName.textContent = usuarioActual.nombres;
+            }
+            
+            // Cargar datos iniciales
+            cargarDashboard();
+            cargarHotels();
+            cargarTipos();
+        }
+
+        // ===== NOTIFICATIONS =====
+        function mostrarToast(mensaje, tipo = 'info') {
+            const toastLive = document.getElementById('toastLive');
+            const toastBody = document.getElementById('toastMessage');
+            
+            toastBody.textContent = mensaje;
+            
+            // Cambiar clase de styling basada en tipo
+            toastLive.className = 'toast';
+            const bsToast = new bootstrap.Toast(toastLive);
+            bsToast.show();
+        }
+
+        // ===== DASHBOARD =====
+        async function cargarDashboard() {
+            try {
+                // Contar hoteles
+                const res1 = await fetch(`${API_BASE}/api/hoteles`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const hoteles = await res1.json();
+                document.getElementById('totalHotels').textContent = hoteles.length;
+                
+                // Contar reservas activas
+                const res2 = await fetch(`${API_BASE}/api/reservas?estado=pendiente`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const pendientes = await res2.json();
+                document.getElementById('activeReservas').textContent = pendientes.length;
+                
+                // Contar usuarios
+                const res3 = await fetch(`${API_BASE}/api/usuarios`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const usuarios = await res3.json();
+                document.getElementById('totalUsers').textContent = usuarios.length;
+                
+            } catch (err) {
+                console.error('Error cargando dashboard:', err);
+            }
+        }
+
+        // ===== HOTELS =====
+        async function cargarHotels() {
+            try {
+                const res = await fetch(`${API_BASE}/api/hoteles`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const hoteles = await res.json();
+                
+                const tbody = document.getElementById('hotelsTableBody');
+                tbody.innerHTML = '';
+                
+                hoteles.forEach((hotel, index) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${index + 1}</td>
+                        <td>${hotel.nombre}</td>
+                        <td>${hotel.ciudad}</td>
+                        <td>${hotel.pais}</td>
+                        <td>${hotel.propietario_nombre || 'N/A'}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="editarHotel(${hotel.id})">
+                                <i class="fa fa-edit"></i>
+                            </button>
+                            <button class="btn btn-sm btn-outline-danger" onclick="borrarHotel(${hotel.id})">
+                                <i class="fa fa-trash"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+            } catch (err) {
+                console.error('Error cargando hotels:', err);
+            }
+        }
+
+        function showAddHotelForm() {
+            document.getElementById('hotelId').value = '';
+            document.getElementById('hotelNombre').value = '';
+            document.getElementById('hotelCiudad').value = '';
+            document.getElementById('hotelPais').value = '';
+            document.getElementById('hotelTelefono').value = '';
+            document.getElementById('addHotelForm').classList.remove('display-none');
+        }
+
+        async function editarHotel(id) {
+            try {
+                const res = await fetch(`${API_BASE}/api/hoteles/${id}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const hotel = await res.json();
+                
+                document.getElementById('hotelId').value = hotel.id;
+                document.getElementById('hotelNombre').value = hotel.nombre;
+                document.getElementById('hotelCiudad').value = hotel.ciudad;
+                document.getElementById('hotelPais').value = hotel.pais;
+                document.getElementById('hotelTelefono').value = hotel.telefono || '';
+                document.getElementById('addHotelForm').classList.remove('display-none');
+            } catch (err) {
+                mostrarToast('Error al cargar hotel', 'danger');
+            }
+        }
+
+        async function borrarHotel(id) {
+            if (!confirm('¿Está seguro de borrar este hotel?')) return;
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/hoteles/${id}`, {
+                    method: 'DELETE',
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const data = await res.json();
+                
+                if (res.status === 200) {
+                    mostrarToast(data.mensaje, 'success');
+                    cargarHotels();
+                } else {
+                    mostrarToast(data.detail, 'danger');
+                }
+            } catch (err) {
+                mostrarToast('Error al borrar hotel', 'danger');
+            }
+        }
+
+        async function guardarHotel(e) {
+            e.preventDefault();
+            
+            const formData = {
+                nombre: document.getElementById('hotelNombre').value.trim(),
+                ciudad: document.getElementById('hotelCiudad').value.trim(),
+                pais: document.getElementById('hotelPais').value.trim(),
+                telefono: document.getElementById('hotelTelefono').value.trim()
+            };
+            
+            const hotelId = document.getElementById('hotelId').value;
+            const method = hotelId ? 'PUT' : 'POST';
+            const url = hotelId ? `${API_BASE}/api/hoteles/${hotelId}` : `${API_BASE}/api/hoteles`;
+            
+            try {
+                const res = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const data = await res.json();
+                
+                if (res.status === 200 || res.status === 201) {
+                    mostrarToast(data.mensaje || 'Hotel guardado correctamente', 'success');
+                    document.getElementById('addHotelForm').classList.add('display-none');
+                    cargarHotels();
+                } else {
+                    mostrarToast(data.detail || 'Error al guardar hotel', 'danger');
+                }
+            } catch (err) {
+                mostrarToast('Error de conexión', 'danger');
+            }
+        }
+
+        // ===== SEARCH =====
+        async function performSearch() {
+            const city = document.getElementById('searchCity').value.trim();
+            const checkIn = document.getElementById('searchCheckIn').value;
+            const checkOut = document.getElementById('searchCheckOut').value;
+            const guests = document.getElementById('searchGuests').value;
+            tipo = document.getElementById('searchTipo').value;
+            maxPrice = document.getElementById('searchMaxPrice').value;
+            
+            if (!city || !checkIn || !checkOut) {
+                mostrarToast('Por favor complete todos los campos de búsqueda', 'warning');
+                return;
+            }
+            
+            try {
+                const res = await fetch(`${API_BASE}/api/alojamientos/buscar?fecha_entrada=${checkIn}&fecha_salida=${checkOut}&huespedes=${guests}&ciudad=${city}&tipo=${tipo}&precio_max=${maxPrice}`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                
+                const data = await res.json();
+                
+                if (res.status === 200) {
+                    mostrarResultadosBusqueda(data);
+                } else {
+                    mostrarToast(data.detail || 'Error en la búsqueda', 'danger');
+                }
+            } catch (err) {
+                mostrarToast('Error de conexión con el servidor', 'danger');
+            }
+        }
+
+        function mostrarResultadosBusqueda(resultados) {
+            const container = document.getElementById('searchResultsBody');
+            const countSpan = document.getElementById('resultsCount');
+            
+            if (resultados.length === 0) {
+                container.innerHTML = '<p class="text-center text-muted py-3">No hay habitaciones disponibles con esos criterios</p>';
+                countSpan.textContent = '0';
+                document.getElementById('searchResults').classList.add('display-none');
+                return;
+            }
+            
+            let html = '';
+            let totalNoches = 0;
+            
+            resultados.forEach((hab, i) => {
+                const noches = Math.ceil((new Date(hab.fecha_salida) - new Date(hab.fecha_entrada)) / (1000 * 60 * 60 * 24));
+                totalNoches += noches;
+                html += `
+                    <div class="p-3 border-bottom">
+                        <h6 class="mb-1">${hab.hotel_nombre} - Habitación ${hab.numero}</h6>
+                        <p class="mb-1 small text-muted">Capacidad: ${hab.capacidad} huéspedes | ${noches} noche(s)</p>
+                        <p class="mb-1"><strong>Precio base:</strong> ${hab.precio_base.toLocaleString()} COP</p>
+                        <p class="mb-0"><strong>Precio total estimado:</strong> ${(parseFloat(hab.precio_total) || 0).toLocaleString()} COP</p>
+                    </div>
+                `;
+            });
+            
+            container.innerHTML = html;
+            countSpan.textContent = resultados.length;
+            document.getElementById('searchResults').classList.remove('display-none');
+        }
+
+        // ===== RESERVAS =====
+        async function cargarReservas() {
+            try {
+                const filter = document.getElementById('reservaFilter').value;
+                const url = filter === 'all' 
+                    ? `${API_BASE}/api/reservas` 
+                    : `${API_BASE}/api/reservas?estado=${filter}`;
+                
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const reservas = await res.json();
+                
+                const tbody = document.getElementById('reservasTableBody');
+                tbody.innerHTML = '';
+                
+                reservas.forEach((reserva, i) => {
+                    const statusClass = {
+                        pendiente: 'bg-warning text-dark',
+                        confirmada: 'bg-success',
+                        completada: 'bg-info',
+                        cancelada: 'bg-danger'
+                    }[reserva.estado] || 'bg-secondary';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${reserva.hotel_nombre}</td>
+                        <td>${reserva.fecha_entrada} - ${reserva.fecha_salida}</td>
+                        <td>${reserva.huespedes}</td>
+                        <td>${reserva.total.toLocaleString()} COP</td>
+                        <td><span class="btn btn-sm ${statusClass}">${reserva.estado}</span></td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+            } catch (err) {
+                console.error('Error cargando reservas:', err);
+            }
+        }
+
+        function refreshReservas() {
+            cargarReservas();
+        }
+
+        // ===== PAGOS =====
+        async function cargarPagos() {
+            try {
+                const res = await fetch(`${API_BASE}/api/pagos`, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const pagos = await res.json();
+                
+                const tbody = document.getElementById('pagosTableBody');
+                tbody.innerHTML = '';
+                
+                pagos.forEach((pago, i) => {
+                    const estadoClass = {
+                        pendiente: 'bg-warning text-dark',
+                        pagado: 'bg-success',
+                        reembolsado: 'bg-info'
+                    }[pago.estado] || 'bg-secondary';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${pago.reserva_id}</td>
+                        <td>${pago.monto.toLocaleString()} COP</td>
+                        <td>${pago.metodo}</td>
+                        <td><span class="btn btn-sm ${estadoClass}">${pago.estado}</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="verDetallePago(${pago.id})">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+            } catch (err) {
+                console.error('Error cargando pagos:', err);
+            }
+        }
+
+        function refreshPagos() {
+            cargarPagos();
+        }
+
+        function simularPago() {
+            if (!confirm('¿Desea simular un pago? Esto cambiará el estado de una reserva a confirmada.')) return;
+            
+            try {
+                const res = fetch(`${API_BASE}/api/pagos`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${token}`
+                    },
+                    body: JSON.stringify({ reserva_id: 1, metodo: 'tarjeta' })
+                });
+                
+                const data = await res.json();
+                
+                if (res.ok) {
+                    mostrarToast(data.mensaje || 'Pago procesado exitosamente', 'success');
+                    cargarPagos();
+                    cargarReservas();
+                } else {
+                    mostrarToast(data.detail || 'Error en el pago', 'danger');
+                }
+            } catch (err) {
+                mostrarToast('Error de conexión', 'danger');
+            }
+        }
+
+        function verDetallePago(id) {
+            // Modal simple con detalles
+            mostrarToast(`Detalles del pago #${id} - Ver en panel administrativo`, 'info');
+        }
+
+        // ===== EVALUACIONES =====
+        async function cargarEvaluaciones() {
+            try {
+                const hotelFilter = document.getElementById('evalHotelFilter').value;
+                const url = hotelFilter !== 'all' 
+                    ? `${API_BASE}/api/evaluaciones/hotel/${hotelFilter}` 
+                    : `${API_BASE}/api/evaluaciones`;
+                
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const evaluaciones = await res.json();
+                
+                const tbody = document.getElementById('evaluacionesTableBody');
+                tbody.innerHTML = '';
+                
+                evaluaciones.forEach((eval, i) => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${eval.hotel_nombre}</td>
+                        <td>${eval.autor}</td>
+                        <td>
+                            <span class="badge bg-primary">${eval.puntuacion}</span>
+                        </td>
+                        <td>${eval.comentario ? truncarTexto(eval.comentario, 60) : '—'}</td>
+                        <td>
+                            ${eval.respuesta_hotel ? '<span class="text-success small">Respondida</span>' : '<span class="text-muted small">Sin respuesta</span>'}
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+                // Actualizar resumen
+                document.getElementById('resumenTotal').textContent = evaluaciones.length || 0;
+                if (evaluaciones.length > 0) {
+                    const promedio = (evaluaciones.reduce((sum, e) => sum + e.puntuacion, 0) / evaluaciones.length).toFixed(2);
+                    document.getElementById('resumenPromedio').textContent = promedio;
+                    
+                    // Distribución
+                    const distrib = {};
+                    evaluaciones.forEach(e => {
+                        distrib[e.puntuacion] = (distrib[e.puntuacion] || 0) + 1;
+                    });
+                    const container = document.getElementById('distribucionContainer');
+                    let distHtml = '';
+                    for (let i = 1; i <= 5; i++) {
+                        distHtml += `<span class="badge bg-primary">${i}: ${distrib[i] || 0}</span> `;
+                    }
+                    container.innerHTML = distHtml;
+                }
+                
+            } catch (err) {
+                console.error('Error cargando evaluaciones:', err);
+            }
+        }
+
+        function refreshEvaluaciones() {
+            cargarEvaluaciones();
+        }
+
+        // ===== ASISTENCIAS =====
+        async function cargarAsistencias() {
+            try {
+                const typeFilter = document.getElementById('asistTypeFilter').value;
+                const stateFilter = document.getElementById('asistStateFilter').value;
+                
+                let url = `${API_BASE}/api/asistencias`;
+                if (typeFilter !== 'all') url += `?tipo=${typeFilter}`;
+                if (stateFilter !== 'all') {
+                    if (typeFilter !== 'all') url += '&';
+                    url += `estado=${stateFilter}`;
+                }
+                
+                const res = await fetch(url, {
+                    headers: { 'Authorization': `Bearer ${token}` }
+                });
+                const asistencias = await res.json();
+                
+                const tbody = document.getElementById('asistenciasTableBody');
+                tbody.innerHTML = '';
+                
+                asistencias.forEach((asist, i) => {
+                    const estadoClass = {
+                        abierta: 'bg-warning text-dark',
+                        'en_proceso': 'bg-info',
+                        respondida: 'bg-success',
+                        cerrada: 'bg-secondary'
+                    }[asist.estado] || 'bg-secondary';
+                    
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${i + 1}</td>
+                        <td>${asist.asunto}</td>
+                        <td><span class="badge bg-light text-primary">${asist.tipo}</span></td>
+                        <td><span class="btn btn-sm ${estadoClass}">${asist.estado}</span></td>
+                        <td>${new Date(asist.fecha_creacion).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-outline-primary" onclick="verDetalleAsistencia(${asist.id})">
+                                <i class="fa fa-eye"></i>
+                            </button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+                
+            } catch (err) {
+                console.error('Error cargando asistencias:', err);
+            }
+        }
+
+        function refreshAsistencias() {
+            cargarAsistencias();
+        }
+
+        function verDetalleAsistencia(id) {
+            mostrarToast(`Solicitud #${id} - Ver en panel de soporte`, 'info');
+        }
+
+        // ===== UTILIDADES =====
+        function truncarTexto(texto, longitud) {
+            return texto.length > longitud ? texto.substring(0, longitud) + '...' : texto;
+        }
+
+        // Función para mostrar/ocultar secciones
+        function showSection(sectionId) {
+            // Ocultar todas las secciones
+            const sections = [
+                'hotelsSection', 'searchSection', 'reservasSection', 
+                'pagosSection', 'evaluacionesSection', 'asistenciasSection'
+            ];
+            
+            sections.forEach(sec => document.getElementById(sec).classList.add('display-none'));
+            
+            // Mostrar la seleccionada
+            if (sectionId && document.getElementById(sectionId)) {
+                document.getElementById(sectionId).classList.remove('display-none');
+            }
+        }
+
+        // Event listeners para navegación
+        document.getElementById('dashboardLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection();
+            cargarDashboard();
+        });
+
+        document.getElementById('hotelsLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('hotelsSection');
+            cargarHotels();
+        });
+
+        document.getElementById('searchLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('searchSection');
+        });
+
+        document.getElementById('reservasLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('reservasSection');
+            cargarReservas();
+        });
+
+        document.getElementById('pagosLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('pagosSection');
+            cargarPagos();
+        });
+
+        document.getElementById('evaluacionesLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('evaluacionesSection');
+            cargarEvaluaciones();
+        });
+
+        document.getElementById('asistenciasLink').addEventListener('click', (e) => {
+            e.preventDefault();
+            showSection('asistenciasSection');
+            cargarAsistencias();
+        });
+
+        // Form submit handlers
+        document.getElementById('hotelForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+            guardarHotel(e);
+        });
+
+        document.getElementById('searchForm').addEventListener('submit', performSearch);
+    </script>
+</body>
+</html>
