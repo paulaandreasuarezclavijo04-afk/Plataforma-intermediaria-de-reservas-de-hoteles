@@ -6,6 +6,11 @@
 from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi.staticfiles import StaticFiles
+from fastapi.responses import FileResponse
+from sqlalchemy.orm import Session
+
+from app.repository.database.session import get_db
 
 from app.api.routers import (
     alojamiento_router,
@@ -70,6 +75,15 @@ def root():
 @app.get("/health", tags=["Sistema"])
 def health():
     return {"status": "healthy"}
+
+
+# Montar archivos estáticos desde el directorio actual
+app.mount("/", StaticFiles(directory=".", html=True), name="static")
+
+# ── Ruta para servir la interfaz gráfica ──────────────────────
+@app.get("/interface", include_in_schema=False)
+def interface():
+    return FileResponse("interface.html")
 
 
 # ── Función auxiliar: obtener usuario desde header Authorization ─
