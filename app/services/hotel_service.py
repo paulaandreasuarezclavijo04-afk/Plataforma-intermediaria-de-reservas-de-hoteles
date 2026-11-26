@@ -137,6 +137,42 @@ class HotelService:
                 )
             return propietarios[0]
 
+    # ── HU-031: buscar alojamiento ──────────────────────────
+    def buscar_hoteles(
+        self,
+        destino: str,
+        fecha_entrada: date | None = None,
+        fecha_salida: date | None = None,
+        huespedes: int = 1,
+        page: int = 1,
+        page_size: int = 10,
+    ) -> tuple[list[Hotel], int]:
+        destino = (destino or "").strip()
+        if not destino:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El parámetro destino es obligatorio")
+
+        if huespedes < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El número de huéspedes debe ser un entero positivo")
+
+        if (fecha_entrada is None) != (fecha_salida is None):
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Debe enviar fecha_entrada y fecha_salida juntas")
+
+        if fecha_entrada and fecha_salida and fecha_salida <= fecha_entrada:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="La fecha de salida debe ser posterior a la fecha de entrada")
+
+        if page < 1:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="La página debe ser mayor o igual a 1")
+        if page_size < 1 or page_size > 100:
+            raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="page_size debe estar entre 1 y 100")
+
+        q = self.db.query(Hotel).filter(Hotel.activo == True)
+        like = f"%{destino}%"
+        q = q.filter((Hotel.ciudad.ilike(like)) | (Hotel.nombre.ilike(like)) | (Hotel.pais.ilike(like)))
+
+        total = q.count()
+        items = q.order_by(Hotel.id.asc()).offset((page - 1) * page_size).limit(page_size).all()
+        return items, total
+
     # ── HU-033: consultar disponibilidad por hotel ──────────
     def consultar_disponibilidad(
         self,
