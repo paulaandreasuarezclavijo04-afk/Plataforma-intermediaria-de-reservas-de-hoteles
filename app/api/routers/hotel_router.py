@@ -4,13 +4,15 @@
 
 from datetime import date
 
-from fastapi import APIRouter, Depends, Query, status
+from fastapi import APIRouter, Depends, HTTPException, Query, status
 from sqlalchemy.orm import Session
 
 from app.api.schemas.hotel_schema import (
     ApiResponse,
+    BusquedaHotelesData,
     DisponibilidadHotelData,
     HabitacionDisponibilidad,
+    HotelBusquedaItem,
     HotelCreate,
     HotelResponse,
     HotelUpdate,
@@ -82,8 +84,42 @@ def eliminar(hotel_id: int, db: Session = Depends(get_db)):
     return HotelService(db).eliminar(hotel_id)
 
 
-# ── HU-033 (v1) ─────────────────────────────────────────────
+# ── HU-033 / HU-031 (v1) ────────────────────────────────────
 v1_router = APIRouter(prefix="/api/v1/hoteles", tags=["Hoteles"])
+
+
+@v1_router.get(
+    "/buscar",
+    response_model=ApiResponse[BusquedaHotelesData],
+    summary="HU-031: buscar alojamiento",
+)
+def buscar_hoteles(
+    destino: str | None = Query(None, description="Destino/ciudad requerido"),
+    fecha_entrada: date | None = Query(None, description="YYYY-MM-DD"),
+    fecha_salida: date | None = Query(None, description="YYYY-MM-DD"),
+    huespedes: int = Query(1, ge=1, description="Número de huéspedes"),
+    page: int = Query(1, ge=1, description="Página"),
+    page_size: int = Query(10, ge=1, le=100, description="Tamaño de página"),
+    db: Session = Depends(get_db),
+):
+    if destino is None or not destino.strip():
+        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="El parámetro destino es obligatorio")
+    items, total = HotelService(db).buscar_hoteles(
+        destino=destino,
+        fecha_entrada=fecha_entrada,
+        fecha_salida=fecha_salida,
+        huespedes=huespedes,
+        page=page,
+        page_size=page_size,
+    )
+    data = BusquedaHotelesData(
+        items=[HotelBusquedaItem(id=h.id, nombre=h.nombre, ciudad=h.ciudad, pais=h.pais, direccion=h.direccion, descripcion=h.descripcion) for h in items],
+        page=page,
+        page_size=page_size,
+        total=total,
+    )
+    mensaje = "No se encontraron coincidencias" if total == 0 else "Búsqueda realizada correctamente"
+    return ApiResponse(mensaje=mensaje, data=data, success=True)
 
 
 @v1_router.get(

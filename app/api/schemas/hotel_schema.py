@@ -136,3 +136,19 @@ class DisponibilidadHotelData(BaseModel):
     fecha_entrada: date
     fecha_salida: date
     habitaciones: list[HabitacionDisponibilidad]
+
+
+class HotelBusquedaItem(BaseModel):
+    id: int
+    nombre: str
+    ciudad: str
+    pais: str | None = None
+    direccion: str | None = None
+    descripcion: str | None = None
+
+
+class BusquedaHotelesData(BaseModel):
+    items: list[HotelBusquedaItem]
+    page: int
+    page_size: int
+    total: int
