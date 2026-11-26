@@ -65,7 +65,7 @@ class ValidarCorreoRequest(BaseModel):
 
 
 class RecuperarPasswordRequest(BaseModel):
-    token: str = Field(..., min_length=10, max_length=64)
+    token: str = Field(..., min_length=10, max_length=512)
     nueva_password: str = Field(..., min_length=6, max_length=128)
 
 
